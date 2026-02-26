@@ -4,12 +4,12 @@ These hands-on tutorials guide you through customizing and extending the Intervi
 
 ## Prerequisites
 
-Before starting these tutorials:
+Before starting:
 
-- ✅ Complete the [Getting Started](../README.md#getting-started) guide
-- ✅ Get the application running locally
-- ✅ Read [ARCHITECTURE.md](ARCHITECTURE.md) for system overview
-- ✅ Familiarity with C# and .NET
+- Complete the [Getting Started](../README.md#getting-started) setup
+- Get the app running locally
+- Skim the [architecture overview](ARCHITECTURE.md)
+- Basic familiarity with C# and .NET
 
 ---
 
@@ -21,7 +21,7 @@ Before starting these tutorials:
 
 ### Step 1: Read the Agent Instructions
 
-Open [src/InterviewCoach.Agent/Program.cs](../src/InterviewCoach.Agent/Program.cs) and find the agent instructions (around line 95):
+Open [src/InterviewCoach.Agent/AgentDelegateFactory.cs](../src/InterviewCoach.Agent/AgentDelegateFactory.cs) and find the `CreateSingleAgent` method:
 
 ```csharp
 instructions: """
@@ -68,8 +68,8 @@ var agent = new ChatClientAgent(
 You should see entries like:
 
 ```
-info: Calling tool: create_interview_session
-info: Tool response: {"sessionId": "..."}
+info: Calling tool: add_interview_session
+info: Tool response: {"id": "..."}
 ```
 
 ### Step 3: Examine Session State
@@ -77,7 +77,7 @@ info: Tool response: {"sessionId": "..."}
 The agent maintains state through the InterviewData MCP server:
 
 1. Open [src/InterviewCoach.Mcp.InterviewData/InterviewSessionTool.cs](../src/InterviewCoach.Mcp.InterviewData/InterviewSessionTool.cs)
-2. Find the `UpdateInterviewSessionTool` class
+2. Find the `UpdateInterviewSessionAsync` method
 3. See how it stores resume, job description, and transcript
 
 **Exercise**:
@@ -91,7 +91,7 @@ The agent maintains state through the InterviewData MCP server:
 
 Let's add a warmup message before behavioral questions.
 
-**Edit** [src/InterviewCoach.Agent/Program.cs](../src/InterviewCoach.Agent/Program.cs):
+**Edit** [src/InterviewCoach.Agent/AgentDelegateFactory.cs](../src/InterviewCoach.Agent/AgentDelegateFactory.cs):
 
 Find this line:
 
@@ -136,10 +136,11 @@ dotnet add package Microsoft.Extensions.Hosting
 Create `InterviewTipsTool.cs`:
 
 ```csharp
+using System.ComponentModel;
 using ModelContextProtocol.Server;
-using System.Text.Json;
 
-public class GetInterviewTipTool : McpTool
+[McpServerToolType]
+public class InterviewTipsTool
 {
     private static readonly Dictionary<string, string> Tips = new()
     {
@@ -148,35 +149,13 @@ public class GetInterviewTipTool : McpTool
         ["general"] = "Prepare questions for the interviewer. Show genuine interest"
     };
 
-    public GetInterviewTipTool()
+    [McpServerTool(Name = "get_interview_tip", Title = "Get an interview tip")]
+    [Description("Get a helpful interview tip by category (behavioral, technical, or general).")]
+    public string GetInterviewTip(
+        [Description("Tip category: behavioral, technical, or general")] string category
+    )
     {
-        Name = "get_interview_tip";
-        Description = "Get a helpful interview tip by category";
-        InputSchema = new
-        {
-            type = "object",
-            properties = new
-            {
-                category = new
-                {
-                    type = "string",
-                    description = "Tip category: behavioral, technical, or general",
-                    @enum = new[] { "behavioral", "technical", "general" }
-                }
-            },
-            required = new[] { "category" }
-        };
-    }
-
-    public override Task<ToolResponse> ExecuteAsync(ToolRequest request)
-    {
-        var category = request.Parameters["category"]?.ToString() ?? "general";
-        var tip = Tips.GetValueOrDefault(category, Tips["general"]);
-        
-        return Task.FromResult(new ToolResponse
-        {
-            Content = JsonSerializer.Serialize(new { tip, category })
-        });
+        return Tips.GetValueOrDefault(category, Tips["general"]);
     }
 }
 ```
@@ -201,7 +180,7 @@ await app.RunAsync();
 
 ### Step 4: Register in AppHost
 
-Edit [src/InterviewCoach.AppHost/AppHost.cs](../src/InterviewCoach.AppHost/AppHost.cs):
+Edit [src/InterviewCoach.Agent/Program.cs](../src/InterviewCoach.Agent/Program.cs):
 
 Add after other MCP servers:
 
@@ -213,10 +192,10 @@ var mcpTips = builder.AddProject<Projects.InterviewCoach_Mcp_Tips>("mcp-tips")
 Update agent reference:
 
 ```csharp
-var agent = builder.AddProject<Projects.InterviewCoach_Agent>("agent")
+var agent = builder.AddProject<Projects.InterviewCoach_Agent>(ResourceConstants.Agent)
                    .WithExternalHttpEndpoints()
-                   .WithLlmReference(builder.Configuration)
-                   .WithEnvironment("LlmProvider", builder.Configuration["LlmProvider"] ?? string.Empty)
+                   .WithLlmReference(builder.Configuration, args)
+                   .WithEnvironment(ResourceConstants.LlmProvider, builder.Configuration[ResourceConstants.LlmProvider] ?? string.Empty)
                    .WithReference(mcpMarkItDown.GetEndpoint("http"))
                    .WithReference(mcpInterviewData)
                    .WithReference(mcpTips)  // Add this line
@@ -318,9 +297,9 @@ instructions: """
 
 ### Step 1: Update Agent Instructions
 
-Edit [src/InterviewCoach.Agent/Program.cs](../src/InterviewCoach.Agent/Program.cs):
+Edit [src/InterviewCoach.Agent/AgentDelegateFactory.cs](../src/InterviewCoach.Agent/AgentDelegateFactory.cs):
 
-Change the opening:
+Find the `CreateSingleAgent` method and change the opening:
 
 ```csharp
 instructions: """
@@ -338,7 +317,7 @@ instructions: """
 
 ### Step 2: Modify Question Types
 
-Change the question flow:
+Change the question flow in `AgentDelegateFactory.cs`:
 
 ```csharp
 07. Once you have updated the session record with the information, begin the interview with 
@@ -494,22 +473,34 @@ static ChatClientAgent CreateAgent(IServiceProvider sp, string key, string role)
 
 The coordinator would handle transitions:
 
-```
-User connects → Coordinator Agent
-    ↓
-Coordinator: "Let me introduce you to [Recruiter Agent name]"
-    ↓
-Hand off to Recruiter Agent → Conducts behavioral interview
-    ↓
-Recruiter completes → Returns to Coordinator
-    ↓
-Coordinator: "Great! Now let's move to the technical interview with [Technical Agent]"
-    ↓
-Hand off to Technical Agent → Conducts technical assessment
-    ↓
-Technical completes → Returns to Coordinator
-    ↓
-Coordinator: Aggregates feedback → Final summary
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant C as Coordinator Agent
+    participant R as Recruiter Agent
+    participant T as Technical Agent
+
+    U->>C: Connect
+    C->>U: "Let me introduce you to the Recruiter"
+    C-->>R: Handoff
+
+    loop Behavioral Interview
+        R->>U: Ask behavioral question
+        U->>R: Answer
+    end
+    R-->>C: Complete → return to Coordinator
+
+    C->>U: "Now let's move to the technical interview"
+    C-->>T: Handoff
+
+    loop Technical Assessment
+        T->>U: Ask technical question
+        U->>T: Answer
+    end
+    T-->>C: Complete → return to Coordinator
+
+    C->>C: Aggregate feedback
+    C->>U: Final summary
 ```
 
 **Note**: Full multi-agent orchestration requires additional workflow management. See [Microsoft Agent Framework Orchestrations](https://learn.microsoft.com/agent-framework/user-guide/workflows/orchestrations/overview) for advanced patterns.
@@ -542,49 +533,20 @@ public class InterviewEvaluation
 ### Step 2: Add Evaluation Tool to MCP Server
 
 ```csharp
-public class SaveEvaluationTool : McpTool
+using System.ComponentModel;
+using ModelContextProtocol.Server;
+
+[McpServerToolType]
+public class EvaluationTool(IInterviewSessionRepository repository)
 {
-    private readonly IInterviewSessionRepository _repository;
-    
-    public SaveEvaluationTool(IInterviewSessionRepository repository)
+    [McpServerTool(Name = "save_interview_evaluation", Title = "Save interview evaluation")]
+    [Description("Save structured evaluation scores and feedback for an interview session.")]
+    public async Task<InterviewEvaluation> SaveEvaluationAsync(
+        [Description("The evaluation data")] InterviewEvaluation evaluation
+    )
     {
-        _repository = repository;
-        Name = "save_interview_evaluation";
-        Description = "Save structured evaluation scores and feedback";
-        InputSchema = new
-        {
-            type = "object",
-            properties = new
-            {
-                sessionId = new { type = "string" },
-                communicationScore = new { type = "integer", minimum = 1, maximum = 10 },
-                technicalScore = new { type = "integer", minimum = 1, maximum = 10 },
-                problemSolvingScore = new { type = "integer", minimum = 1, maximum = 10 },
-                strengths = new { type = "array", items = new { type = "string" } },
-                areasForImprovement = new { type = "array", items = new { type = "string" } },
-                overallRecommendation = new { type = "string" }
-            },
-            required = new[] { "sessionId" }
-        };
-    }
-    
-    public override async Task<ToolResponse> ExecuteAsync(ToolRequest request)
-    {
-        var evaluation = new InterviewEvaluation
-        {
-            SessionId = request.Parameters["sessionId"]?.ToString() ?? "",
-            CommunicationScore = int.Parse(request.Parameters["communicationScore"]?.ToString() ?? "0"),
-            TechnicalScore = int.Parse(request.Parameters["technicalScore"]?.ToString() ?? "0"),
-            ProblemSolvingScore = int.Parse(request.Parameters["problemSolvingScore"]?.ToString() ?? "0"),
-            // ... map other properties
-        };
-        
-        await _repository.SaveEvaluationAsync(evaluation);
-        
-        return new ToolResponse
-        {
-            Content = JsonSerializer.Serialize(new { status = "saved", evaluation })
-        };
+        await repository.SaveEvaluationAsync(evaluation);
+        return evaluation;
     }
 }
 ```
@@ -607,28 +569,25 @@ public class SaveEvaluationTool : McpTool
 
 ## Next Steps
 
-After completing these tutorials, you should be able to:
+After these tutorials you should be able to:
 
-- ✅ Modify agent behavior through instructions
-- ✅ Create custom MCP servers with tools
-- ✅ Understand multi-agent patterns
-- ✅ Add structured evaluation logic
+- Change agent behavior by editing instructions
+- Build a custom MCP server with tools
+- Understand multi-agent handoff patterns
+- Add structured evaluation logic
 
-### Additional Challenges
+### More things to try
 
-1. **Add voice input**: Integrate speech-to-text for realistic interview practice
-2. **Timer functionality**: Add MCP tool to track time per question
-3. **Question bank**: Create MCP server with curated questions by role/level
-4. **Video analysis**: MCP server to analyze facial expressions (advanced)
-5. **Comparison mode**: Compare multiple interview sessions
+1. **Voice input** — integrate speech-to-text for realistic practice
+2. **Timer** — add an MCP tool to track time per question
+3. **Question bank** — MCP server with curated questions by role/level
+4. **Video analysis** — MCP server for facial expression feedback (advanced)
+5. **Session comparison** — diff multiple interview sessions
 
 ### Resources
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System design details
-- [MCP-SERVERS.md](MCP-SERVERS.md) - MCP deep dive
-- [Microsoft Agent Framework Docs](https://aka.ms/agent-framework)
-- [FAQ.md](FAQ.md) - Common questions
+- [Microsoft Agent Framework](https://aka.ms/agent-framework)
 
 ---
 
-**Share Your Extensions!** If you build something cool with this sample, open a PR or discussion on [GitHub](https://github.com/Azure-Samples/interview-coach-agent-framework).
+If you build something interesting on top of this, open a PR or start a discussion on [GitHub](https://github.com/Azure-Samples/interview-coach-agent-framework).
