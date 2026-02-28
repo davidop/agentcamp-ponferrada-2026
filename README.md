@@ -113,7 +113,14 @@ The default is Microsoft Foundry, but you can also use:
 
 - [Azure OpenAI](docs/providers/AZURE-OPENAI.md) — direct AOAI integration
 - [GitHub Models](docs/providers/GITHUB-MODELS.md) — free tier, good for prototyping
-- [GitHub Copilot](docs/providers/GITHUB-COPILOT.md) — local dev with Copilot SDK
+<!-- - [GitHub Copilot](docs/providers/GITHUB-COPILOT.md) — local dev with Copilot SDK -->
+
+### Alternative agent mode
+
+The default is `LlmHandOff`, but you can also use:
+
+- [`Single`](docs/MULTI-AGENT.md#mode-1-single-agent) - single-agent mode
+<!-- - [`CopilotHandOff`](docs/MULTI-AGENT.md#mode-3-multi-agent-handoff-gitHub-copilot) - multi-agent mode with GitHub Copilot -->
 
 ## Additional Resources
 

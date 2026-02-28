@@ -4,11 +4,12 @@ The app supports multiple LLM backends. Pick one in config and go — no code ch
 
 ## Quick comparison
 
-| Provider                                      | Best For                                  | Auth       | Cost               |
-|-----------------------------------------------|-------------------------------------------|------------|--------------------|
-| **[Microsoft Foundry](MICROSOFT-FOUNDRY.md)** | Production deployments with Agent Service | API Key    | Pay-per-use        |
-| **[Azure OpenAI](AZURE-OPENAI.md)**           | Production deployments                    | API Key    | Pay-per-use        |
-| **[GitHub Models](GITHUB-MODELS.md)**         | Local development and prototyping         | GitHub PAT | Free (with limits) |
+| Provider                                      | Best For                                              | Auth       | Cost               |
+|-----------------------------------------------|-------------------------------------------------------|------------|--------------------|
+| **[Microsoft Foundry](MICROSOFT-FOUNDRY.md)** | Production deployments with Agent Service             | API Key    | Pay-per-use        |
+| **[Azure OpenAI](AZURE-OPENAI.md)**           | Production deployments                                | API Key    | Pay-per-use        |
+| **[GitHub Models](GITHUB-MODELS.md)**         | Local development and prototyping                     | GitHub PAT | Free (with limits) |
+<!-- | **[GitHub Copilot](GITHUB-MODELS.md)**        | Local development and prototyping with GitHub Copilot | GitHub PAT | Free (with limits) | -->
 
 ## Getting started
 
@@ -17,6 +18,7 @@ Pick a provider and follow the guide:
 - [Microsoft Foundry](MICROSOFT-FOUNDRY.md) (recommended)
 - [Azure OpenAI](AZURE-OPENAI.md)
 - [GitHub Models](GITHUB-MODELS.md)
+<!-- - [GitHub Copilot](GITHUB-COPILOT.md) -->
 
 ## Switching providers
 
@@ -73,6 +75,22 @@ All providers use the same code. To switch:
 }
 ```
 
+<!-- **GitHub Copilot:**
+
+```json
+{
+  "AgentMode": "CopilotHandOff",
+
+  "LlmProvider": "GitHubCopilot",
+
+  "GitHubCopilot": {
+    "Token": "{{GITHUB_PAT}}"
+  }
+}
+```
+
+> **NOTE**: Choosing `GitHubCopilot` as an LLM provider only allows the agent mode of `CopilotHandOff`. -->
+
 ### Command-line examples
 
 You can also pass the provider as a flag instead of editing config:
@@ -94,6 +112,14 @@ aspire run --file ./apphost.cs -- --provider AzureOpenAI
 ```bash
 aspire run --file ./apphost.cs -- --provider GitHubModels
 ```
+
+<!-- **GitHub Copilot:**
+
+```bash
+aspire run --file ./apphost.cs -- --provider GitHubCopilot --mode CopilotHandOff
+```
+
+> **NOTE**: Choosing `GitHubCopilot` as an LLM provider only allows the agent mode of `CopilotHandOff`. -->
 
 ## Next steps
 

@@ -37,8 +37,10 @@ aspire run --file ./apphost.cs -- --mode Single
 aspire run --file ./apphost.cs -- --mode LlmHandOff
 
 # Mode 3: Multi-agent handoff (GitHub Copilot)
-aspire run --file ./apphost.cs -- --mode CopilotHandOff
+aspire run --file ./apphost.cs -- --provider GitHubCopilot --mode CopilotHandOff
 ```
+
+> **NOTE**: Choosing `Copilot` as the agent mode only allows the LLM provider of `GitHubCopilot`.
 
 ## Mode 1: Single agent
 
