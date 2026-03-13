@@ -53,7 +53,7 @@ h1 {
     letter-spacing: -0.02em;
 }
 
-h1:focus {
+h1:focus:not(:focus-visible) {
     outline: none;
 }
 
