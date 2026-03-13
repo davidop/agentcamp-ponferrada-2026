@@ -1,25 +1,60 @@
-.chat-header-container {
-    top: 0; 
-    padding: 1.5rem; 
+/* Sticky top bar */
+.chat-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
 }
 
-.chat-header-controls {
-    margin-bottom: 1.5rem; 
+.chat-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
 }
 
-h1 {
-    overflow: hidden;
-    text-overflow: ellipsis;
+/* Brand (logo + name) */
+.chat-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.new-chat-icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    color: rgb(55, 65, 81);
+.brand-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background: var(--color-accent);
+    color: #fff;
+    flex-shrink: 0;
 }
 
-@media (min-width: 768px) {
-    .chat-header-container {
-        position: sticky;
+    .brand-icon svg {
+        width: 1.1rem;
+        height: 1.1rem;
     }
+
+.brand-name {
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+    color: var(--color-text-primary);
 }
+
+/* New-chat button */
+.new-chat-btn {
+    gap: 0.35rem;
+    font-size: 0.8125rem;
+}
+
+    .new-chat-btn svg {
+        width: 1rem;
+        height: 1rem;
+    }

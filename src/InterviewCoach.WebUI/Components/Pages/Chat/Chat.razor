@@ -6,20 +6,43 @@
 @inject FileUploadService FileUploadService
 @implements IDisposable
 
-<PageTitle>Chat</PageTitle>
+<PageTitle>Interview Coach</PageTitle>
 
 <ChatHeader OnNewChat="@ResetConversationAsync" />
 
 <ChatMessageList Messages="@messages" InProgressMessage="@currentResponseMessage">
     <NoMessagesContent>
-        <div>I'm your friendly interview coach. To get started, enter the link or text of your resume and job
-            description.</div>
-        </NoMessagesContent>
-    </ChatMessageList>
+        <div class="welcome-hero">
+            <div class="welcome-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                </svg>
+            </div>
+            <h1 class="welcome-title">How can I help you today?</h1>
+            <p class="welcome-subtitle">I'm your personal interview coach. Share your resume and job description to get started.</p>
+        </div>
+        <div class="suggestion-cards page-width">
+            <button class="suggestion-card" @onclick='() => SetSuggestion("Help me prepare for a behavioral interview for a software engineering role.")'>
+                <span class="suggestion-card-icon">🎯</span>
+                <span class="suggestion-card-text">Prepare for behavioral interview</span>
+            </button>
+            <button class="suggestion-card" @onclick='() => SetSuggestion("Review my resume and suggest improvements for a senior developer position.")'>
+                <span class="suggestion-card-icon">📄</span>
+                <span class="suggestion-card-text">Review my resume</span>
+            </button>
+            <button class="suggestion-card" @onclick='() => SetSuggestion("Give me common technical interview questions for a full-stack developer role.")'>
+                <span class="suggestion-card-icon">💻</span>
+                <span class="suggestion-card-text">Technical interview questions</span>
+            </button>
+            <button class="suggestion-card" @onclick='() => SetSuggestion(0)'>
+                <span class="suggestion-card-icon">💬</span>
+                <span class="suggestion-card-text">How to answer "Tell me about yourself"</span>
+            </button>
+        </div>
+    </NoMessagesContent>
+</ChatMessageList>
 
-    <div class="chat-container">
-        <ChatInput OnSend="@AddUserMessageAsync" @ref="@chatInput" />
-    </div>
+<ChatInput OnSend="@AddUserMessageAsync" @ref="@chatInput" Suggestion="@pendingSuggestion" OnSuggestionConsumed="@ClearSuggestion" />
 
 @code {
     private const string SystemPrompt = """
@@ -36,6 +59,26 @@
     private CancellationTokenSource? currentResponseCancellation;
     private ChatMessage? currentResponseMessage;
     private ChatInput? chatInput;
+    private string? pendingSuggestion;
+
+    private void SetSuggestion(string text)
+    {
+        pendingSuggestion = text;
+    }
+
+    private void SetSuggestion(int index)
+    {
+        pendingSuggestion = index switch
+        {
+            0 => "How should I answer \"Tell me about yourself\" in an interview?",
+            _ => null
+        };
+    }
+
+    private void ClearSuggestion()
+    {
+        pendingSuggestion = null;
+    }
 
     protected override void OnInitialized()
     {
