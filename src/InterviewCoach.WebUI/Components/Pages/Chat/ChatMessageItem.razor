@@ -22,7 +22,7 @@ else if (Message.Role == ChatRole.Assistant)
                         </svg>
                     </div>
                 </div>
-                <div class="assistant-message-header">Assistant</div>
+                <div class="assistant-message-header">Asistente</div>
                 <div class="assistant-message-text">
                     <assistant-message markdown="@text"></assistant-message>
                 </div>
@@ -37,7 +37,7 @@ else if (Message.Role == ChatRole.Assistant)
                     </svg>
                 </div>
                 <div class="assistant-search-content">
-                    Loading relevant documents (this will take a minute)...
+                    Cargando documentos relevantes (esto tardará un momento)...
                 </div>
             </div>
         }
@@ -50,11 +50,11 @@ else if (Message.Role == ChatRole.Assistant)
                     </svg>
                 </div>
                 <div class="assistant-search-content">
-                    Searching:
+                    Buscando:
                     <span class="assistant-search-phrase">@searchPhrase</span>
                     @if (fcc.Arguments?.TryGetValue("filenameFilter", out var filenameObj) is true && filenameObj is string filename && !string.IsNullOrEmpty(filename))
                     {
-                        <text> in </text><span class="assistant-search-phrase">@filename</span>
+                        <text> en </text><span class="assistant-search-phrase">@filename</span>
                     }
                 </div>
             </div>

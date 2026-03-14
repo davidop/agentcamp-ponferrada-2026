@@ -8,28 +8,28 @@
             {
                 <div class="file-chip">
                     📄 @attachedFile.Name
-                    <button type="button" @onclick="RemoveAttachment" title="Remove attachment" aria-label="Remove attachment">✕</button>
+                    <button type="button" @onclick="RemoveAttachment" title="Eliminar adjunto" aria-label="Eliminar adjunto">✕</button>
                 </div>
             }
 
-            <textarea @ref="@textArea" @bind="@messageText" placeholder="Message Interview Coach…" rows="1" aria-label="Message to Interview Coach"></textarea>
+            <textarea @ref="@textArea" @bind="@messageText" placeholder="Escribe un mensaje..." rows="1" aria-label="Mensaje a Interview Coach"></textarea>
 
             <div class="tools">
-                <button type="button" class="attach" title="Attach file" aria-label="Attach file" @onclick="TriggerFileInput">
+                <button type="button" class="attach" title="Adjuntar archivo" aria-label="Adjuntar archivo" @onclick="TriggerFileInput">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="tool-icon" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
                     </svg>
                 </button>
                 <InputFile @ref="@fileInput" OnChange="@OnFileSelected" style="display:none"
                            accept=".pdf,.docx,.doc,.txt,.md,.html" />
-                <button type="submit" title="Send message" aria-label="Send message" class="send-button">
+                <button type="submit" title="Enviar mensaje" aria-label="Enviar mensaje" class="send-button">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="tool-icon" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
                     </svg>
                 </button>
             </div>
         </label>
-        <p class="input-hint">Interview Coach may make mistakes. Always verify important information.</p>
+        <p class="input-hint">Interview Coach puede cometer errores. Verifica siempre la información importante.</p>
     </EditForm>
 </div>
 

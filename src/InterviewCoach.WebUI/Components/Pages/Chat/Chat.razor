@@ -9,6 +9,7 @@
 <PageTitle>Interview Coach</PageTitle>
 
 <ChatHeader OnNewChat="@ResetConversationAsync" />
+<WelcomeWizard />
 
 <ChatMessageList Messages="@messages" InProgressMessage="@currentResponseMessage">
     <NoMessagesContent>
@@ -18,25 +19,25 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
                 </svg>
             </div>
-            <h1 class="welcome-title">How can I help you today?</h1>
-            <p class="welcome-subtitle">I'm your personal interview coach. Share your resume and job description to get started.</p>
+            <h1 class="welcome-title">¿En qué puedo ayudarte hoy?</h1>
+            <p class="welcome-subtitle">Soy tu entrenador personal de entrevistas. Comparte tu currículum y la descripción del puesto para comenzar.</p>
         </div>
         <div class="suggestion-cards page-width">
-            <button class="suggestion-card" @onclick='() => SetSuggestion("Help me prepare for a behavioral interview for a software engineering role.")'>
+            <button class="suggestion-card" @onclick='() => SetSuggestion("Ayúdame a prepararme para una entrevista conductual para un puesto de ingeniería de software.")'>
                 <span class="suggestion-card-icon">🎯</span>
-                <span class="suggestion-card-text">Prepare for behavioral interview</span>
+                <span class="suggestion-card-text">Preparar entrevista conductual</span>
             </button>
-            <button class="suggestion-card" @onclick='() => SetSuggestion("Review my resume and suggest improvements for a senior developer position.")'>
+            <button class="suggestion-card" @onclick='() => SetSuggestion("Revisa mi currículum y sugiere mejoras para un puesto de desarrollador senior.")'>
                 <span class="suggestion-card-icon">📄</span>
-                <span class="suggestion-card-text">Review my resume</span>
+                <span class="suggestion-card-text">Revisar mi currículum</span>
             </button>
-            <button class="suggestion-card" @onclick='() => SetSuggestion("Give me common technical interview questions for a full-stack developer role.")'>
+            <button class="suggestion-card" @onclick='() => SetSuggestion("Dame preguntas técnicas comunes para un puesto de desarrollador full-stack.")'>
                 <span class="suggestion-card-icon">💻</span>
-                <span class="suggestion-card-text">Technical interview questions</span>
+                <span class="suggestion-card-text">Preguntas de entrevista técnica</span>
             </button>
             <button class="suggestion-card" @onclick='() => SetSuggestion(0)'>
                 <span class="suggestion-card-icon">💬</span>
-                <span class="suggestion-card-text">How to answer "Tell me about yourself"</span>
+                <span class="suggestion-card-text">Cómo responder "Háblame de ti"</span>
             </button>
         </div>
     </NoMessagesContent>
@@ -70,7 +71,7 @@
     {
         pendingSuggestion = index switch
         {
-            0 => "How should I answer \"Tell me about yourself\" in an interview?",
+            0 => "¿Cómo debería responder \"Háblame de ti\" en una entrevista?",
             _ => null
         };
     }
@@ -108,8 +109,8 @@
                 var url = await FileUploadService.UploadFileAsync(stream, file.Name, file.ContentType);
                 var messageText = userMessage.Text?.Trim();
                 var combined = string.IsNullOrEmpty(messageText)
-                    ? $"I've attached my file: {url}"
-                    : $"{messageText}\n[Attached file: {url}]";
+                    ? $"He adjuntado mi archivo: {url}"
+                    : $"{messageText}\n[Archivo adjunto: {url}]";
                 userMessage = new ChatMessage(ChatRole.User, combined);
             }
             catch (Exception ex)
@@ -163,7 +164,7 @@ ChatMessage responseMessage, CancellationToken cancellationToken)
         catch (System.Text.Json.JsonException ex)
         {
             Logger.LogError(ex, "JSON parsing error at position {Position}. The response from the agent endpoint is not valid JSON. This usually means the endpoint is returning plain text or HTML instead of the expected streaming format.", ex.BytePositionInLine);
-            responseText.Text = "Error: The interview coach service returned an unexpected response format. Please check the agent service logs for details.";
+            responseText.Text = "Error: El servicio de Interview Coach devolvió un formato de respuesta inesperado. Comprueba los registros del agente para más detalles.";
             ChatMessageItem.NotifyChanged(responseMessage);
             StateHasChanged();
         }
