@@ -1,6 +1,7 @@
 #:sdk Aspire.AppHost.Sdk@13.1.2
 #:package Aspire.Hosting.Azure@13.*
 #:package Aspire.Hosting.GitHub.Models@13.*
+#:package Aspire.Hosting.JavaScript@13.*
 #:package Aspire.Hosting.OpenAI@13.*
 #:package CommunityToolkit.Aspire.Hosting.SQLite@13.*
 #:project ./src/InterviewCoach.Agent/InterviewCoach.Agent.csproj
@@ -17,6 +18,7 @@ const string RESOURCE_DB_SQLITE = "sqlite";
 const string RESOURCE_DB_NAME = "interviewcoach.db";
 const string RESOURCE_PROJECT_AGENT = "agent";
 const string RESOURCE_PROJECT_WEBUI = "webui";
+const string RESOURCE_MINIVERSE = "miniverse";
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -41,14 +43,20 @@ var mcpInterviewData = builder.AddProject<Projects.InterviewCoach_Mcp_InterviewD
                               .WithReference(sqlite)
                               .WaitFor(sqlite);
 
+var miniverse = builder.AddJavaScriptApp(RESOURCE_MINIVERSE, "./src/miniverse", "dev")
+                       .WithHttpEndpoint(targetPort: 4321)
+                       .WithExternalHttpEndpoints();
+
 var agent = builder.AddProject<Projects.InterviewCoach_Agent>(RESOURCE_PROJECT_AGENT)
                    .WithExternalHttpEndpoints()
                    .WithLlmReference(builder.Configuration, args)
                    .WithEnvironment(RESOURCE_CONSTANTS_LLM_PROVIDER, builder.Configuration[RESOURCE_CONSTANTS_LLM_PROVIDER] ?? string.Empty)
                    .WithReference(mcpMarkItDown.GetEndpoint("http"))
                    .WithReference(mcpInterviewData)
+                   .WithReference(miniverse.GetEndpoint("http"))
                    .WaitFor(mcpMarkItDown)
-                   .WaitFor(mcpInterviewData);
+                   .WaitFor(mcpInterviewData)
+                   .WaitFor(miniverse);
 
 var webUI = builder.AddProject<Projects.InterviewCoach_WebUI>(RESOURCE_PROJECT_WEBUI)
                    .WithExternalHttpEndpoints()

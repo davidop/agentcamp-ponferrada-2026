@@ -1,0 +1,13 @@
+{
+  "name": "miniverse",
+  "version": "1.0.0",
+  "description": "Miniverse pixel world server for Interview Coach agents",
+  "type": "module",
+  "scripts": {
+    "start": "miniverse --no-browser --port 4321",
+    "dev": "miniverse --no-browser --port 4321"
+  },
+  "dependencies": {
+    "@miniverse/server": "0.2.8"
+  }
+}
