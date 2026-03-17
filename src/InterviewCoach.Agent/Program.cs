@@ -15,6 +15,13 @@ var config = builder.Configuration;
 
 builder.AddServiceDefaults();
 
+builder.Services.AddHttpClient(Constants.MiniverseHttpClient, client =>
+{
+    client.BaseAddress = new Uri("https+http://miniverse");
+});
+
+builder.Services.AddHostedService<MiniverseService>();
+
 builder.Services.AddHttpClient("mcp-markitdown", client =>
 {
     client.BaseAddress = new Uri("https+http://mcp-markitdown");

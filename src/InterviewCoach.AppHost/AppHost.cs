@@ -15,14 +15,20 @@ var mcpInterviewData = builder.AddProject<Projects.InterviewCoach_Mcp_InterviewD
                               .WithReference(sqlite)
                               .WaitFor(sqlite);
 
+var miniverse = builder.AddJavaScriptApp(ResourceConstants.Miniverse, "../miniverse", "dev")
+                       .WithHttpEndpoint(targetPort: 4321)
+                       .WithExternalHttpEndpoints();
+
 var agent = builder.AddProject<Projects.InterviewCoach_Agent>(ResourceConstants.Agent)
                    .WithExternalHttpEndpoints()
                    .WithLlmReference(builder.Configuration, args)
                    .WithEnvironment(ResourceConstants.LlmProvider, builder.Configuration[ResourceConstants.LlmProvider] ?? string.Empty)
                    .WithReference(mcpMarkItDown.GetEndpoint("http"))
                    .WithReference(mcpInterviewData)
+                   .WithReference(miniverse.GetEndpoint("http"))
                    .WaitFor(mcpMarkItDown)
-                   .WaitFor(mcpInterviewData);
+                   .WaitFor(mcpInterviewData)
+                   .WaitFor(miniverse);
 
 var webUI = builder.AddProject<Projects.InterviewCoach_WebUI>(ResourceConstants.WebUI)
                    .WithExternalHttpEndpoints()
